@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-HK">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>《福音 Tee 恤網店生存錄》</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: #FAF8F5;
+      color: #2C2A29;
+      background-image: radial-gradient(#E6E0D6 1px, transparent 1px);
+      background-size: 20px 20px;
+    }
+    .font-serif-tc {
+      font-family: 'Noto Serif TC', serif;
+    }
+    .washi-card {
+      background-color: #FFFFFF;
+      border: 1px solid #E6E0D6;
+      box-shadow: 0 4px 20px -2px rgba(44, 42, 41, 0.04);
+    }
+    .btn-choice {
+      transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .btn-choice:hover:not(:disabled) {
+      transform: translateY(-2px);
+      border-color: #5C7A6B;
+      background-color: #F4F7F5;
+    }
+    .btn-choice:active:not(:disabled) {
+      transform: translateY(0);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fadeIn 0.35s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen py-6 px-4 sm:px-6 lg:px-8 selection:bg-[#5C7A6B] selection:text-white">
+
+  <div class="max-w-3xl mx-auto space-y-5">
+    
+    <!-- 頂部品牌標題與音效控制 -->
+    <header class="washi-card rounded-2xl p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2 text-xs tracking-widest text-[#7A746E] uppercase mb-1">
+          <span>Indie Apparel Simulation</span>
+          <span>•</span>
+          <span>12 Weeks Challenge</span>
+        </div>
+        <h1 class="font-serif-tc text-2xl sm:text-3xl font-bold tracking-tight text-[#2C2A29]">
+          👕 《福音 Tee 恤網店生存錄》
+        </h1>
+        <p class="text-xs sm:text-sm text-[#6E6862] mt-1">
+          日系質感 × 信仰美學，在演算法與現金流之間活過這一季。
+        </p>
+      </div>
+      <div class="flex items-center gap-2 self-start sm:self-center">
+        <button id="soundToggleBtn" onclick="toggleSound()" class="px-3 py-1.5 rounded-lg border border-[#E6E0D6] text-xs font-medium text-[#5C5650] hover:bg-[#F5F2EC] transition">
+          🔊 音效：開
+        </button>
+        <button onclick="resetGame()" class="px-3 py-1.5 rounded-lg border border-[#E6E0D6] text-xs font-medium text-[#5C5650] hover:bg-[#F5F2EC] transition">
+          重新開局
+        </button>
+      </div>
+    </header>
+
+    <!-- 狀態面板 HUD -->
+    <section class="washi-card rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs font-bold tracking-wider text-[#7A746E] uppercase">📊 目前營運狀態面板</h2>
+        <span id="statusBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-[#EDF3F0] text-[#436152] font-medium">
+          營運穩健
+        </span>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <!-- 週數 -->
+        <div class="p-3 rounded-xl bg-[#FAF8F5] border border-[#EFECE6]">
+          <div class="text-xs text-[#7A746E]">目前進度</div>
+          <div class="text-lg sm:text-xl font-bold text-[#2C2A29] mt-0.5">
+            第 <span id="statWeek">1</span> <span class="text-xs font-normal text-[#7A746E]">/ 12 週</span>
+          </div>
+        </div>
+
+        <!-- 可用資金 -->
+        <div class="p-3 rounded-xl bg-[#FAF8F5] border border-[#EFECE6]">
+          <div class="text-xs text-[#7A746E]">可用資金</div>
+          <div class="text-lg sm:text-xl font-bold text-[#2C2A29] mt-0.5">
+            HK$ <span id="statCash">15,000</span>
+          </div>
+        </div>
+
+        <!-- 現貨庫存 -->
+        <div class="p-3 rounded-xl bg-[#FAF8F5] border border-[#EFECE6]">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-[#7A746E]">現貨庫存</span>
+            <button id="restockBtn" onclick="restockInventory()" title="花費 HK$ 1,125 補貨 15 件" class="text-[11px] px-2 py-0.5 rounded bg-[#5C7A6B] text-white hover:bg-[#4A6356] transition">
+              +補貨15件
+            </button>
+          </div>
+          <div class="text-lg sm:text-xl font-bold text-[#2C2A29] mt-0.5">
+            <span id="statStock">45</span> <span class="text-xs font-normal text-[#7A746E]">件</span>
+          </div>
+        </div>
+
+        <!-- 品牌聲量 -->
+        <div class="p-3 rounded-xl bg-[#FAF8F5] border border-[#EFECE6]">
+          <div class="text-xs text-[#7A746E]">品牌聲量／粉絲</div>
+          <div class="text-lg sm:text-xl font-bold text-[#2C2A29] mt-0.5">
+            <span id="statFollowers">120</span> <span class="text-xs font-normal text-[#7A746E]">人</span>
+          </div>
+        </div>
+
+        <!-- 店主精力值 -->
+        <div class="p-3 rounded-xl bg-[#FAF8F5] border border-[#EFECE6]">
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-[#7A746E]">店主精力值</span>
+            <span id="fatigueWarning" class="hidden text-[11px] text-[#C85A32] font-bold">⚠️過勞</span>
+          </div>
+          <div class="text-lg sm:text-xl font-bold text-[#2C2A29] mt-0.5">
+            <span id="statEnergy">100</span> <span class="text-xs font-normal text-[#7A746E]">/ 100</span>
+          </div>
+          <div class="w-full bg-[#E6E0D6] h-1.5 rounded-full mt-1.5 overflow-hidden">
+            <div id="energyBar" class="bg-[#5C7A6B] h-full transition-all duration-300" style="width: 100%"></div>
+          </div>
+        </div>
+
+        <!-- 固定開支倒數 -->
+        <div class="p-3 rounded-xl bg-[#FAF8F5] border border-[#EFECE6]">
+          <div class="text-xs text-[#7A746E]">固定開支倒數</div>
+          <div class="text-lg sm:text-xl font-bold text-[#2C2A29] mt-0.5">
+            <span id="statRentCountdown">3</span> <span class="text-xs font-normal text-[#7A746E]">週後扣 $1,200</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 主舞台：本週事件與決策區 -->
+    <main id="gameStage" class="washi-card rounded-2xl p-5 sm:p-7 space-y-5 animate-fade-in">
+      <div class="flex items-center justify-between border-b border-[#EFECE6] pb-3">
+        <span id="eventTag" class="text-xs font-semibold tracking-wider px-2.5 py-1 rounded-md bg-[#F3EFEA] text-[#6E6862]">
+          第 1 週 • 開店首週
+        </span>
+        <span class="text-xs text-[#8C857E]">單件售價 HK$ 280（成本 HK$ 75）</span>
+      </div>
+
+      <div class="space-y-2.5">
+        <h3 id="eventTitle" class="font-serif-tc text-xl sm:text-2xl font-bold text-[#2C2A29]">
+          網店正式上線！第一批 45 件現貨已入倉
+        </h3>
+        <p id="eventDesc" class="text-sm sm:text-base text-[#4A4642] leading-relaxed">
+          你剛在線上架設好自己的原創圖像 Tee 網店（3 款插畫各 15 件，共 45 件）。目前 IG 與 Threads 只有 120 位親友與初期路人追蹤。沒有大集團的無上限廣告費，第一週你打算如何打響頭炮？
+        </p>
+      </div>
+
+      <!-- 決策選項清單 -->
+      <div id="choicesContainer" class="space-y-3 pt-2">
+        <!-- 由 JS 動態生成按鈕 -->
+      </div>
+    </main>
+
+    <!-- 結算畫面（預設隱藏） -->
+    <section id="endStage" class="hidden washi-card rounded-2xl p-6 sm:p-8 text-center space-y-5 animate-fade-in">
+      <div id="endBadge" class="inline-block text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-[#EDF3F0] text-[#436152]">
+        季度結算
+      </div>
+      <h2 id="endTitle" class="font-serif-tc text-2xl sm:text-3xl font-bold text-[#2C2A29]">
+        🎉 成功存活！質感福音品牌站穩陣腳
+      </h2>
+      <p id="endSummary" class="text-sm sm:text-base text-[#4A4642] max-w-xl mx-auto leading-relaxed">
+        你在 12 週的考驗中守住了現金流與創作初心，成功讓信仰美學走進日常穿搭。
+      </p>
+      <div id="endStatsGrid" class="grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-2xl mx-auto pt-2">
+        <!-- 最終數據 -->
+      </div>
+      <div class="pt-3">
+        <button onclick="resetGame()" class="px-6 py-3 rounded-xl bg-[#5C7A6B] text-white font-medium text-sm hover:bg-[#4A6356] transition shadow-sm">
+          再挑戰新一季營運
+        </button>
+      </div>
+    </section>
+
+    <!-- 店主經營手記（歷史紀錄 Log） -->
+    <section class="washi-card rounded-2xl p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-bold tracking-wider text-[#7A746E] uppercase">📖 店主經營手記（營運紀錄）</h3>
+        <span class="text-[11px] text-[#9A938C]">自動記錄每週決策與損益</span>
+      </div>
+      <div id="logContainer" class="space-y-2.5 max-h-60 overflow-y-auto pr-1 text-xs sm:text-sm">
+        <div class="p-3 rounded-xl bg-[#FAF8F5] border border-[#EFECE6] text-[#6E6862]">
+          <span class="font-bold text-[#2C2A29]">[開局]</span> 準備資金 HK$ 15,000，現貨 45 件，粉絲 120 人。目標：熬過 12 週並達成盈利！
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script>
+    // 簡易 Web Audio API 音效合成器
+    let soundEnabled = true;
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playTone(freq, type = 'sine', duration = 0.12, delay = 0) {
+      if (!soundEnabled) return;
+      try {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime + delay);
+        gain.gain.setValueAtTime(0.06, audioCtx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + delay + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(audioCtx.currentTime + delay);
+        osc.stop(audioCtx.currentTime + delay + duration);
+      } catch (e) {}
+    }
+
+    function playClickSound() {
+      playTone(520, 'triangle', 0.08, 0);
+      playTone(680, 'sine', 0.1, 0.05);
+    }
+
+    function playCoinSound() {
+      playTone(880, 'sine', 0.1, 0);
+      playTone(1174.66, 'sine', 0.18, 0.07);
+    }
+
+    function playAlertSound() {
+      playTone(260, 'sawtooth', 0.15, 0);
+      playTone(210, 'sawtooth', 0.2, 0.12);
+    }
+
+    function toggleSound() {
+      soundEnabled = !soundEnabled;
+      document.getElementById('soundToggleBtn').textContent = soundEnabled ? '🔊 音效：開' : '🔇 音效：關';
+    }
+
+    // 遊戲核心狀態
+    const UNIT_PRICE = 280;
+    const UNIT_COST = 75;
+    let state = {};
+
+    // 開局固定事件
+    const openingEvent = {
+      tag: '第 1 週 • 開店首週',
+      title: '網店正式上線！第一批 45 件現貨已入倉',
+      desc: '你剛在線上架設好自己的原創圖像 Tee 網店（3 款插畫各 15 件，共 45 件）。目前 IG 與 Threads 只有 120 位親友與初期路人追蹤。沒有大集團的無上限廣告費，第一週你打算如何打響頭炮？',
+      choices: [
+        {
+          label: 'A. Threads 深度創作分享（自然流量推廣）',
+          sub: '撰寫設計背後的信仰靈感與經文故事，搭配日系穿搭照，不花廣告費。',
+          costText: '資金 $0 | 精力 -15',
+          action: (s) => {
+            const sold = Math.min(s.stock, 6);
+            const rev = sold * UNIT_PRICE;
+            s.stock -= sold;
+            s.cash += rev;
+            s.followers += 45;
+            s.energy -= 15;
+            return `真誠的創作故事引起共鳴！賣出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}），新增 45 位精準追蹤者。`;
+          }
+        },
+        {
+          label: 'B. 投放 IG 精準廣告測試水溫',
+          sub: '設定香港 22–40 歲文青與基督徒受眾，先投 HK$ 1,200 測試點擊率。',
+          costText: '資金 -$1,200 | 精力 -10',
+          action: (s) => {
+            s.cash -= 1200;
+            const sold = Math.min(s.stock, 9);
+            const rev = sold * UNIT_PRICE;
+            s.stock -= sold;
+            s.cash += rev;
+            s.followers += 75;
+            s.energy -= 10;
+            return `廣告成功觸及新客群！扣除廣告費後賣出 ${sold} 件（營業額 HK$ ${rev.toLocaleString()}），粉絲增加 75 人。`;
+          }
+        },
+        {
+          label: 'C. 寄贈公關品給 3 位基督徒 KOL／插畫師',
+          sub: '寄出 3 件現貨並附上親筆手寫謝卡，期望獲得限時動態分享。',
+          costText: '庫存 -3 件 | 運費 -$150 | 精力 -20',
+          action: (s) => {
+            const gift = Math.min(s.stock, 3);
+            s.stock -= gift;
+            s.cash -= 150;
+            const sold = Math.min(s.stock, 7);
+            const rev = sold * UNIT_PRICE;
+            s.stock -= sold;
+            s.cash += rev;
+            s.followers += 110;
+            s.energy -= 20;
+            return `其中一位咖啡店店主 KOL 轉發了你的穿搭照！帶動賣出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}），粉絲急增 110 人。`;
+          }
+        }
+      ]
+    };
+
+    // 隨機事件池
+    const eventPool = [
+      {
+        tag: '社群波動 • Threads 演算法',
+        title: 'Threads 帖文意外小爆紅！留言區熱烈討論',
+        desc: '你分享了一張「在繁忙中尋找安息」的極簡插畫 Tee 細節圖，帖文被轉發超過 80 次，不少路人留言詢問尺碼與布料磅數。',
+        choices: [
+          {
+            label: 'A. 熬夜逐一回覆留言並私訊尺碼建議',
+            sub: '把握黃金 24 小時流量，親自解答每個提問以提升轉化率。',
+            costText: '資金 $0 | 精力 -22',
+            action: (s) => {
+              const demand = s.energy < 30 ? 6 : 11;
+              const sold = Math.min(s.stock, demand);
+              const rev = sold * UNIT_PRICE;
+              s.stock -= sold;
+              s.cash += rev;
+              s.followers += 95;
+              s.energy -= 22;
+              return `誠意滿滿的回覆成功轉化訂單！賣出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}），粉絲 +95 人。`;
+            }
+          },
+          {
+            label: 'B. 順勢推出「限時 48 小時兩件 9 折」優惠',
+            sub: '鼓勵朋友合購或情侶裝下單，加速清空現貨換取現金流。',
+            costText: '單價折讓 | 精力 -12',
+            action: (s) => {
+              const sold = Math.min(s.stock, 14);
+              const rev = Math.round(sold * UNIT_PRICE * 0.9);
+              s.stock -= sold;
+              s.cash += rev;
+              s.followers += 80;
+              s.energy -= 12;
+              return `合購優惠奏效！一口氣賣出 ${sold} 件（折實進帳 HK$ ${rev.toLocaleString()}），現金流大幅回血。`;
+            }
+          },
+          {
+            label: 'C. 保持平常心，只置頂網店連結便去休息',
+            sub: '不強行推銷，讓自然流量慢慢發酵並保留店主精力。',
+            costText: '資金 $0 | 精力 +10',
+            action: (s) => {
+              const sold = Math.min(s.stock, 5);
+              const rev = sold * UNIT_PRICE;
+              s.stock -= sold;
+              s.cash += rev;
+              s.followers += 55;
+              s.energy = Math.min(100, s.energy + 10);
+              return `佛系經營依然吸引到同頻買家！賣出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}），精力恢復 10 點。`;
+            }
+          }
+        ]
+      },
+      {
+        tag: 'B2B 商機 • 教會團契詢價',
+        title: '有教會青年團契詢問「30 件夏令營團衫」報價',
+        desc: '一位團契導師欣賞你的設計不落俗套，詢問能否在 10 天內趕製 30 件印有他們營會主題字的特別版 Tee，預算每件 HK$ 185。',
+        choices: [
+          {
+            label: 'A. 接下急單！連夜改稿並協調印廠加急生產',
+            sub: '扣除成本後淨賺約 HK$ 3,300，但極度消耗心力。',
+            costText: '資金 +$3,300 | 精力 -28',
+            action: (s) => {
+              if (s.energy < 25) {
+                s.cash += 1500;
+                s.energy -= 20;
+                return `【過勞失誤】因精力不足，改稿時尺寸出錯需自費重印部分 Tee，最終僅淨賺 HK$ 1,500。`;
+              }
+              s.cash += 3300;
+              s.followers += 40;
+              s.energy -= 28;
+              return `順利交付 30 件團衫！大獲團友好評，淨賺 HK$ 3,300，亦為品牌帶來 40 位新追蹤者。`;
+            }
+          },
+          {
+            label: 'B. 建議他們直接選購現貨款式並提供團體折扣',
+            sub: '不另開新版，以每件 HK$ 230 出售現有庫存，省時省力。',
+            costText: '庫存大幅減少 | 精力 -10',
+            action: (s) => {
+              const sold = Math.min(s.stock, 12);
+              const rev = sold * 230;
+              s.stock -= sold;
+              s.cash += rev;
+              s.followers += 25;
+              s.energy -= 10;
+              return `對方接受了現貨方案！一次性售出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}），輕鬆無壓力。`;
+            }
+          },
+          {
+            label: 'C. 禮貌婉拒急單，專注維護品牌原創零售線',
+            sub: '避免代工客製化打亂原本的創作與上架節奏。',
+            costText: '資金 $0 | 精力 +5',
+            action: (s) => {
+              const sold = Math.min(s.stock, 4);
+              const rev = sold * UNIT_PRICE;
+              s.stock -= sold;
+              s.cash += rev;
+              s.energy = Math.min(100, s.energy + 5);
+              return `守住了獨立品牌定位，本週零售如常賣出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}）。`;
+            }
+          }
+        ]
+      },
+      {
+        tag: '生產危機 • 供應鏈考驗',
+        title: '新一輪打版出現色差！復古米白變成了偏黃',
+        desc: '你準備推出的新配色樣辦送到，發現印廠把「溫潤米白」印得偏暗黃，與你追求的日系清透質感有落差。',
+        choices: [
+          {
+            label: 'A. 堅持品質！自費 HK$ 900 要求印廠重新調色打版',
+            sub: '寧願延遲上架也不妥協美感，守護品牌口碑。',
+            costText: '資金 -$900 | 精力 -15',
+            action: (s) => {
+              s.cash -= 900;
+              const sold = Math.min(s.stock, 6);
+              const rev = sold * UNIT_PRICE;
+              s.stock -= sold;
+              s.cash += rev;
+              s.followers += 35;
+              s.energy -= 15;
+              return `重印後的質感極佳！你把對品質的執著寫成幕後故事，贏得熟客信任並賣出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}）。`;
+            }
+          },
+          {
+            label: 'B. 靈機一動！包裝成「限量復古做舊特別版」上架',
+            sub: '重新拍攝懷舊膠片感造型照，將瑕疵轉化為獨特賣點。',
+            costText: '資金 $0 | 精力 -20',
+            action: (s) => {
+              const sold = Math.min(s.stock, 8);
+              const rev = sold * UNIT_PRICE;
+              s.stock -= sold;
+              s.cash += rev;
+              s.followers += 50;
+              s.energy -= 20;
+              return `危機化為轉機！復古膠片風造型照大受歡迎，意外賣出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}）。`;
+            }
+          },
+          {
+            label: 'C. 暫緩推出新色，先集中火力推廣現有庫存',
+            sub: '省下打版費，減少本週工作量讓自己喘口氣。',
+            costText: '資金 $0 | 精力 +8',
+            action: (s) => {
+              const sold = Math.min(s.stock, 4);
+              const rev = sold * UNIT_PRICE;
+              s.stock -= sold;
+              s.cash += rev;
+              s.energy = Math.min(100, s.energy + 8);
+              return `穩健止損，專心處理現貨訂單，賣出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}）。`;
+            }
+          }
+        ]
+      },
+      {
+        tag: '線下體驗 • 週末文創市集',
+        title: '受邀參加「誠品／南豐紗廠週末文創市集」',
+        desc: '主辦方有一個候補攤位釋出，兩日租金連佈置雜費需 HK$ 2,200。這是讓客人親手摸到重磅純棉質感的絕佳機會。',
+        choices: [
+          {
+            label: 'A. 租下攤位！親自駐場兩日與客人面對面交流',
+            sub: '考驗體力與口才，但現場試穿成交率極高。',
+            costText: '資金 -$2,200 | 精力 -25',
+            action: (s) => {
+              s.cash -= 2200;
+              const demand = s.energy < 30 ? 10 : 16;
+              const sold = Math.min(s.stock, demand);
+              const rev = sold * UNIT_PRICE;
+              s.stock -= sold;
+              s.cash += rev;
+              s.followers += 130;
+              s.energy -= 25;
+              return `市集反應熱烈！客人摸過布料紛紛入手，賣出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}），IG 暴增 130 位真實粉絲！`;
+            }
+          },
+          {
+            label: 'B. 找一位基督徒手作朋友合租攤位分攤成本',
+            sub: '只需負擔一半租金 HK$ 1,100，兩人輪流看檔更輕鬆。',
+            costText: '資金 -$1,100 | 精力 -14',
+            action: (s) => {
+              s.cash -= 1100;
+              const sold = Math.min(s.stock, 10);
+              const rev = sold * UNIT_PRICE;
+              s.stock -= sold;
+              s.cash += rev;
+              s.followers += 75;
+              s.energy -= 14;
+              return `合租攤位氣氛超好！互相引流客人，賣出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}），淨賺又省力。`;
+            }
+          },
+          {
+            label: 'C. 婉拒市集，改在線上舉辦「週末免運費活動」',
+            sub: '免去舟車勞頓與高昂場租，在家輕鬆包貨。',
+            costText: '運費補貼 -$280 | 精力 -6',
+            action: (s) => {
+              s.cash -= 280;
+              const sold = Math.min(s.stock, 7);
+              const rev = sold * UNIT_PRICE;
+              s.stock -= sold;
+              s.cash += rev;
+              s.followers += 30;
+              s.energy -= 6;
+              return `免運費吸引了一批觀望已久的追蹤者下單，賣出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}）。`;
+            }
+          }
+        ]
+      },
+      {
+        tag: '演算法寒冬 • 觸及率下滑',
+        title: 'IG 演算法突然限流，貼文讚好數跌剩平日三成',
+        desc: '連續幾日發佈的商品圖觸及率低迷，後台瀏覽量明顯下滑，心裡難免湧起一陣經營焦慮。',
+        choices: [
+          {
+            label: 'A. 轉戰 Reels 短影片：拍攝「包貨日常 + 治癒系配樂」',
+            sub: '順應短影音趨勢，展現印章蓋印與牛皮紙包裝的儀式感。',
+            costText: '資金 $0 | 精力 -18',
+            action: (s) => {
+              const sold = Math.min(s.stock, 9);
+              const rev = sold * UNIT_PRICE;
+              s.stock -= sold;
+              s.cash += rev;
+              s.followers += 85;
+              s.energy -= 18;
+              return `治癒系包貨影片成功破圈！播放量破萬，帶動賣出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}）。`;
+            }
+          },
+          {
+            label: 'B. 舉辦「Tag 一位想祝福的朋友」抽獎送 Tee 活動',
+            sub: '送出 2 件現貨作為禮物，換取留言互動與自然擴散。',
+            costText: '庫存 -2 件 | 精力 -12',
+            action: (s) => {
+              const gift = Math.min(s.stock, 2);
+              s.stock -= gift;
+              const sold = Math.min(s.stock, 6);
+              const rev = sold * UNIT_PRICE;
+              s.stock -= sold;
+              s.cash += rev;
+              s.followers += 120;
+              s.energy -= 12;
+              return `溫暖的祝福主題吸引大批人參加！粉絲增加 120 人，同時賣出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}）。`;
+            }
+          },
+          {
+            label: 'C. 關掉手機去海濱長廊散步 1 小時，安靜禱告沉澱',
+            sub: '不為演算法焦慮，先照顧好自己的身心靈節奏。',
+            costText: '資金 $0 | 精力 +22',
+            action: (s) => {
+              const sold = Math.min(s.stock, 3);
+              const rev = sold * UNIT_PRICE;
+              s.stock -= sold;
+              s.cash += rev;
+              s.energy = Math.min(100, s.energy + 22);
+              return `吹過海風後重新得力！精力大幅回復 22 點，期間仍有熟客回購了 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}）。`;
+            }
+          }
+        ]
+      },
+      {
+        tag: '品牌聯乘 • 跨界合作',
+        title: '獨立精品咖啡店邀請寄賣你的福音插畫 Tee',
+        desc: '一間人氣日系木質調咖啡店很喜歡你的插畫風格，提議在店內角落設置小型展示架寄賣，抽成 25%。',
+        choices: [
+          {
+            label: 'A. 欣然答應！親自佈置充滿詩意的展示角落',
+            sub: '抽成後每件實收 HK$ 210，但能接觸高消費力文青客群。',
+            costText: '陳列道具 -$350 | 精力 -16',
+            action: (s) => {
+              s.cash -= 350;
+              const sold = Math.min(s.stock, 10);
+              const rev = sold * 210;
+              s.stock -= sold;
+              s.cash += rev;
+              s.followers += 65;
+              s.energy -= 16;
+              return `咖啡店客人邊喝手沖邊欣賞你的插畫！寄賣首週即售出 ${sold} 件（實收 HK$ ${rev.toLocaleString()}）。`;
+            }
+          },
+          {
+            label: 'B. 談判合作：合推「買 Tee 送掛耳咖啡包」聯名企劃',
+            sub: '購買咖啡包成本 HK$ 400，線上線下同步宣傳。',
+            costText: '資金 -$400 | 精力 -18',
+            action: (s) => {
+              s.cash -= 400;
+              const sold = Math.min(s.stock, 12);
+              const rev = sold * UNIT_PRICE;
+              s.stock -= sold;
+              s.cash += rev;
+              s.followers += 90;
+              s.energy -= 18;
+              return `跨界聯名質感滿分！大受歡迎賣出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}），品牌格調大幅提升。`;
+            }
+          },
+          {
+            label: 'C. 擔心庫存分散難以管理，婉拒寄賣維持純網店',
+            sub: '保持輕資產運作，不增加額外補貨與盤點負擔。',
+            costText: '資金 $0 | 精力 +5',
+            action: (s) => {
+              const sold = Math.min(s.stock, 5);
+              const rev = sold * UNIT_PRICE;
+              s.stock -= sold;
+              s.cash += rev;
+              s.energy = Math.min(100, s.energy + 5);
+              return `維持單純的網店節奏，本週平穩售出 ${sold} 件（進帳 HK$ ${rev.toLocaleString()}）。`;
+            }
+          }
+        ]
+      }
+    ];
+
+    // 初始化遊戲
+    function initGame() {
+      state = {
+        week: 1,
+        maxWeeks: 12,
+        cash: 15000,
+        stock: 45,
+        followers: 120,
+        energy: 100,
+        rentCountdown: 3,
+        totalSold: 0,
+        usedEventIndices: [],
+        gameOver: false
+      };
+
+      document.getElementById('gameStage').classList.remove('hidden');
+      document.getElementById('endStage').classList.add('hidden');
+      document.getElementById('logContainer').innerHTML = `
+        <div class="p-3 rounded-xl bg-[#FAF8F5] border border-[#EFECE6] text-[#6E6862]">
+          <span class="font-bold text-[#2C2A29]">[開局]</span> 準備資金 HK$ 15,000，現貨 45 件，粉絲 120 人。目標：熬過 12 週並守住盈利與身心健康！
+        </div>
+      `;
+
+      updateHUD();
+      renderEvent(openingEvent);
+    }
+
+    function resetGame() {
+      playClickSound();
+      initGame();
+    }
+
+    // 即時補貨功能
+    function restockInventory() {
+      if (state.gameOver) return;
+      const batchQty = 15;
+      const batchCost = batchQty * UNIT_COST; // 1125
+      if (state.cash < batchCost) {
+        playAlertSound();
+        addLog('補貨失敗', `可用資金不足 HK$ ${batchCost.toLocaleString()}，無法追加生產！`, true);
+        return;
+      }
+      playClickSound();
+      state.cash -= batchCost;
+      state.stock += batchQty;
+      addLog('追加補貨', `花費 HK$ ${batchCost.toLocaleString()} 向印廠補貨 ${batchQty} 件現貨，目前庫存 ${state.stock} 件。`);
+      updateHUD();
+    }
+
+    // 渲染當前事件與選項
+    function renderEvent(ev) {
+      const stage = document.getElementById('gameStage');
+      stage.classList.remove('animate-fade-in');
+      void stage.offsetWidth; // 觸發重繪動畫
+      stage.classList.add('animate-fade-in');
+
+      document.getElementById('eventTag').textContent = `第 ${state.week} 週 • ${ev.tag.split('•').pop().trim()}`;
+      document.getElementById('eventTitle').textContent = ev.title;
+      document.getElementById('eventDesc').textContent = ev.desc;
+
+      const container = document.getElementById('choicesContainer');
+      container.innerHTML = '';
+
+      ev.choices.forEach((choice) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-choice w-full text-left p-4 rounded-xl border border-[#E6E0D6] bg-white flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2';
+        btn.innerHTML = `
+          <div class="space-y-1">
+            <div class="font-bold text-sm sm:text-base text-[#2C2A29]">${choice.label}</div>
+            <div class="text-xs text-[#6E6862]">${choice.sub}</div>
+          </div>
+          <span class="shrink-0 self-start sm:self-center text-[11px] font-medium px-2.5 py-1 rounded-lg bg-[#FAF8F5] border border-[#EFECE6] text-[#5C7A6B]">
+            ${choice.costText}
+          </span>
+        `;
+        btn.onclick = () => handleChoice(choice);
+        container.appendChild(btn);
+      });
+    }
+
+    // 處理玩家選擇與週次推進
+    function handleChoice(choice) {
+      if (state.gameOver) return;
+
+      const prevStock = state.stock;
+      const resultMsg = choice.action(state);
+      const soldThisWeek = Math.max(0, prevStock - state.stock);
+      state.totalSold += soldThisWeek;
+
+      if (soldThisWeek > 0) {
+        playCoinSound();
+      } else {
+        playClickSound();
+      }
+
+      // 庫存不足提示
+      let stockNote = '';
+      if (state.stock === 0) {
+        stockNote = ' ⚠️ 現貨已全數售罄，記得點擊上方「+補貨15件」以免錯失下週訂單！';
+      }
+
+      addLog(`第 ${state.week} 週`, `${choice.label.split(' ')[0]} → ${resultMsg}${stockNote}`);
+
+      // 處理固定開支倒數
+      state.rentCountdown -= 1;
+      if (state.rentCountdown === 0) {
+        state.cash -= 1200;
+        state.rentCountdown = 4;
+        addLog('固定開支扣款', '支付本月 Shopify 平台月費、倉儲及行政雜費 HK$ 1,200。', true);
+      }
+
+      // 檢查失敗條件
+      if (state.cash < 0) {
+        state.cash = 0;
+        updateHUD();
+        endGame(false, '💸 資金鏈斷裂（結業）', '流動資金耗盡，無法支付供應商與平台月費。小本經營最忌庫存積壓與過度投放廣告，下次試著更精準控制現金流吧！');
+        return;
+      }
+
+      if (state.energy <= 0) {
+        state.energy = 0;
+        updateHUD();
+        endGame(false, '🛌 店主過勞病倒（暫停營業）', '連續熬夜改圖、回覆查詢與包貨令你的精力徹底歸零。品牌是長跑，記得適時休息才能走得更遠。');
+        return;
+      }
+
+      // 檢查是否完成 12 週
+      if (state.week >= state.maxWeeks) {
+        updateHUD();
+        const profit = state.cash - 15000;
+        if (profit >= 5000 || state.followers >= 600) {
+          endGame(true, '🎉 季度大豐收！質感福音品牌成功突圍', `歷經 12 週考驗，你不僅守住了現金流（淨現金變化 ${profit >= 0 ? '+' : ''}HK$ ${profit.toLocaleString()}），更累積了 ${state.followers} 位支持者，證明有溫度的信仰設計在市場上大有可為！`);
+        } else {
+          endGame(true, '🌿 穩健存活！成功度過首季新手村', `你平穩走完了 12 週創業路，累積售出 ${state.totalSold} 件原創 Tee，未有陷入虧損或過勞。下一季可以嘗試更大膽的社群企劃來放大聲量！`);
+        }
+        return;
+      }
+
+      // 進入下一週並抽取不重複隨機事件
+      state.week += 1;
+      updateHUD();
+      const nextEv = getNextRandomEvent();
+      renderEvent(nextEv);
+    }
+
+    function getNextRandomEvent() {
+      if (state.usedEventIndices.length >= eventPool.length) {
+        state.usedEventIndices = [];
+      }
+      let idx;
+      do {
+        idx = Math.floor(Math.random() * eventPool.length);
+      } while (state.usedEventIndices.includes(idx));
+      state.usedEventIndices.push(idx);
+      return eventPool[idx];
+    }
+
+    // 更新 HUD 面板
+    function updateHUD() {
+      document.getElementById('statWeek').textContent = state.week;
+      document.getElementById('statCash').textContent = state.cash.toLocaleString();
+      document.getElementById('statStock').textContent = state.stock;
+      document.getElementById('statFollowers').textContent = state.followers.toLocaleString();
+      document.getElementById('statEnergy').textContent = Math.max(0, state.energy);
+      document.getElementById('statRentCountdown').textContent = state.rentCountdown;
+
+      const energyPct = Math.max(0, Math.min(100, state.energy));
+      const energyBar = document.getElementById('energyBar');
+      energyBar.style.width = `${energyPct}%`;
+
+      const fatigueWarn = document.getElementById('fatigueWarning');
+      const statusBadge = document.getElementById('statusBadge');
+
+      if (state.energy < 30) {
+        energyBar.classList.remove('bg-[#5C7A6B]');
+        energyBar.classList.add('bg-[#C85A32]');
+        fatigueWarn.classList.remove('hidden');
+        statusBadge.textContent = '⚠️ 過勞警戒（失誤率上升）';
+        statusBadge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-[#FBECE6] text-[#C85A32] font-medium';
+      } else if (state.cash < 3000) {
+        energyBar.classList.remove('bg-[#C85A32]');
+        energyBar.classList.add('bg-[#5C7A6B]');
+        fatigueWarn.classList.add('hidden');
+        statusBadge.textContent = '⚠️ 現金流偏緊';
+        statusBadge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-[#FDF3E1] text-[#B87A14] font-medium';
+      } else {
+        energyBar.classList.remove('bg-[#C85A32]');
+        energyBar.classList.add('bg-[#5C7A6B]');
+        fatigueWarn.classList.add('hidden');
+        statusBadge.textContent = '營運穩健';
+        statusBadge.className = 'text-xs px-2.5 py-0.5 rounded-full bg-[#EDF3F0] text-[#436152] font-medium';
+      }
+    }
+
+    // 新增經營手記紀錄
+    function addLog(tag, text, isAlert = false) {
+      const logContainer = document.getElementById('logContainer');
+      const entry = document.createElement('div');
+      entry.className = `p-3 rounded-xl border animate-fade-in ${
+        isAlert
+          ? 'bg-[#FDF6F3] border-[#F2D5C9] text-[#9E4222]'
+          : 'bg-[#FAF8F5] border-[#EFECE6] text-[#4A4642]'
+      }`;
+      entry.innerHTML = `<span class="font-bold text-[#2C2A29]">[${tag}]</span> ${text}`;
+      logContainer.prepend(entry);
+    }
+
+    // 遊戲結束畫面
+    function endGame(isWin, title, summary) {
+      state.gameOver = true;
+      if (isWin) {
+        playCoinSound();
+      } else {
+        playAlertSound();
+      }
+
+      document.getElementById('gameStage').classList.add('hidden');
+      const endStage = document.getElementById('endStage');
+      endStage.classList.remove('hidden');
+
+      const badge = document.getElementById('endBadge');
+      badge.textContent = isWin ? '季度圓滿結算' : '營運提前結束';
+      badge.className = isWin
+        ? 'inline-block text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-[#EDF3F0] text-[#436152]'
+        : 'inline-block text-xs font-bold tracking-widest uppercase px-3 py-1 rounded-full bg-[#FBECE6] text-[#C85A32]';
+
+      document.getElementById('endTitle').textContent = title;
+      document.getElementById('endSummary').textContent = summary;
+
+      const netCash = state.cash - 15000;
+      document.getElementById('endStatsGrid').innerHTML = `
+        <div class="p-3 rounded-xl bg-[#FAF8F5] border border-[#EFECE6]">
+          <div class="text-xs text-[#7A746E]">最終資金</div>
+          <div class="text-base sm:text-lg font-bold text-[#2C2A29] mt-0.5">HK$ ${state.cash.toLocaleString()}</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#FAF8F5] border border-[#EFECE6]">
+          <div class="text-xs text-[#7A746E]">現金淨增減</div>
+          <div class="text-base sm:text-lg font-bold ${netCash >= 0 ? 'text-[#436152]' : 'text-[#C85A32]'} mt-0.5">
+            ${netCash >= 0 ? '+' : ''}HK$ ${netCash.toLocaleString()}
+          </div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#FAF8F5] border border-[#EFECE6]">
+          <div class="text-xs text-[#7A746E]">累計售出</div>
+          <div class="text-base sm:text-lg font-bold text-[#2C2A29] mt-0.5">${state.totalSold} 件</div>
+        </div>
+        <div class="p-3 rounded-xl bg-[#FAF8F5] border border-[#EFECE6]">
+          <div class="text-xs text-[#7A746E]">品牌粉絲數</div>
+          <div class="text-base sm:text-lg font-bold text-[#2C2A29] mt-0.5">${state.followers.toLocaleString()} 人</div>
+        </div>
+      `;
+    }
+
+    // 啟動遊戲
+    initGame();
+  </script>
+</body>
+</html>
